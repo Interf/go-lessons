@@ -16,6 +16,10 @@ func (s *Stack) Pop() Item {
 
 	currentLen := len(s.Items)
 
+	if (currentLen - 1) < 0 {
+		return Item{}
+	}
+
 	lastItem := s.Items[currentLen-1]
 
 	newItems := make([]Item, currentLen-1)
