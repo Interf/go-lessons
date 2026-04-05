@@ -22,4 +22,18 @@ func main() {
 	fmt.Println(stack.Pop())
 	fmt.Println(stack)
 
+	fmt.Println("==================")
+
+	queue := structs.Queue{}
+
+	for i := 0; i < 15; i++ {
+		queue.Push(i)
+	}
+
+	fmt.Println(queue)
+	fmt.Println(queue.Pop())
+	fmt.Println(queue.Pop())
+	fmt.Println(queue.Pop())
+	fmt.Println(queue)
+
 }
