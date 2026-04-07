@@ -1,39 +1,59 @@
 package main
 
-import (
-	"fmt"
-
-	"example.com/m/v2/internal/structs"
-)
-
 func main() {
 
-	stack := structs.Stack{}
+	//stack := structs.Stack{}
+	//
+	//for i := 0; i < 15; i++ {
+	//	stack.Push(structs.Item{
+	//		Value: i,
+	//	})
+	//}
+	//
+	//fmt.Println(stack)
+	//fmt.Println(stack.Pop())
+	//fmt.Println(stack.Pop())
+	//fmt.Println(stack.Pop())
+	//fmt.Println(stack)
+	//
+	//fmt.Println("==================")
+	//
+	//queue := structs.Queue{}
+	//
+	//for i := 0; i < 15; i++ {
+	//	queue.Push(i)
+	//}
+	//
+	//fmt.Println(queue)
+	//fmt.Println(queue.Pop())
+	//fmt.Println(queue.Pop())
+	//fmt.Println(queue.Pop())
+	//fmt.Println(queue)
+	//
+	//fmt.Println("==================")
 
-	for i := 0; i < 15; i++ {
-		stack.Push(structs.Item{
-			Value: i,
-		})
-	}
+	//dl := structs.DoubleLink{}
+	//
+	//for i := 1; i < 10; i++ {
+	//	dl.PushFront(i)
+	//}
+	//
+	//for i := 20; i < 30; i++ {
+	//	dl.PushBack(i)
+	//}
 
-	fmt.Println(stack)
-	fmt.Println(stack.Pop())
-	fmt.Println(stack.Pop())
-	fmt.Println(stack.Pop())
-	fmt.Println(stack)
+	//for dl.Len() > 0 {
+	//	value := dl.PopBack()
+	//	if value != nil {
+	//		fmt.Println(value.Value)
+	//	}
+	//}
 
-	fmt.Println("==================")
-
-	queue := structs.Queue{}
-
-	for i := 0; i < 15; i++ {
-		queue.Push(i)
-	}
-
-	fmt.Println(queue)
-	fmt.Println(queue.Pop())
-	fmt.Println(queue.Pop())
-	fmt.Println(queue.Pop())
-	fmt.Println(queue)
+	//node := dl.FindByValue(5)
+	//if node != nil {
+	//	fmt.Println(dl.RemoveNode(node))
+	//}
+	//
+	//fmt.Println(dl.FindByValue(5))
 
 }
