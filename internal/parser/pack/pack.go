@@ -19,17 +19,18 @@ func Pack(text string) string {
 	}
 
 	var prev rune
+	runes := []rune(text)
 
-	for i := 0; i < len(text); i++ {
+	for i := 0; i < len(runes); i++ {
 
-		if prev != rune(text[i]) {
-			result += string(text[i])
+		if prev != runes[i] {
+			result += string(runes[i])
 
-			if countMap[rune(text[i])] > 1 {
-				result += strconv.Itoa(countMap[rune(text[i])])
+			if countMap[runes[i]] > 1 {
+				result += strconv.Itoa(countMap[runes[i]])
 			}
 
-			prev = rune(text[i])
+			prev = runes[i]
 		}
 
 	}

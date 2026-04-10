@@ -28,7 +28,9 @@ func Unpack(str string) (string, error) {
 
 	}
 
-	for index, char := range str {
+	runes := []rune(str)
+
+	for index, char := range runes {
 
 		if unicode.IsDigit(char) {
 			if prev == 0 {
@@ -45,7 +47,7 @@ func Unpack(str string) (string, error) {
 			} else {
 				for i := 0; i < countRepeat-1; i++ {
 
-					if index-2 >= 0 && index-2 < len(result) && str[index-2] == '\\' {
+					if index-2 >= 0 && index-2 < len(result) && runes[index-2] == '\\' {
 						result = append(result, '\\')
 					}
 
@@ -77,7 +79,9 @@ func unpackRaw(str string) (string, error) {
 	var isPrevDigit bool
 	var isPrevEscapeChar bool
 
-	for index, char := range str {
+	runes := []rune(str)
+
+	for index, char := range runes {
 
 		if char == '\\' && !isPrevEscapeChar {
 			isPrevEscapeChar = true
@@ -106,7 +110,7 @@ func unpackRaw(str string) (string, error) {
 
 		} else {
 
-			if isPrevEscapeChar && !unicode.IsDigit(char) && index+1 < len(str) && !unicode.IsDigit(rune(str[index+1])) {
+			if isPrevEscapeChar && !unicode.IsDigit(char) && index+1 < len(runes) && !unicode.IsDigit(runes[index+1]) {
 				return "", ErrUnpackRawEscapeCharWithoutDigit
 			}
 

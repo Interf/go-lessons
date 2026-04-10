@@ -46,6 +46,10 @@ func TestUnpack(t *testing.T) {
 			Text: "`qwe\\4\\5`",
 			Want: "qwe45",
 		},
+		"rus chars": {
+			Text: "а\\3",
+			Want: "а\\\\\\",
+		},
 	}
 
 	for name, test := range tests {
@@ -97,6 +101,10 @@ func TestUnpackRaw(t *testing.T) {
 		"zero digit": {
 			Text: "`qwe0`",
 			Want: "qw",
+		},
+		"rus chars": {
+			Text: "`а\\3`",
+			Want: "а3",
 		},
 	}
 

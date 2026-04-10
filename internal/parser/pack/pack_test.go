@@ -15,6 +15,10 @@ func TestPack(t *testing.T) {
 			Text: "",
 			Want: "",
 		},
+		"rus chars": {
+			Text: "фффцц",
+			Want: "ф3ц2",
+		},
 	}
 
 	for name, test := range tests {
