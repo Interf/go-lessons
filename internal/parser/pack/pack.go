@@ -2,14 +2,15 @@ package pack
 
 import (
 	"strconv"
+	"strings"
 )
 
 func Pack(text string) string {
 
-	var result string
+	builder := strings.Builder{}
 
 	if len(text) == 0 {
-		return result
+		return builder.String()
 	}
 
 	countMap := make(map[rune]int)
@@ -24,10 +25,10 @@ func Pack(text string) string {
 	for i := 0; i < len(runes); i++ {
 
 		if prev != runes[i] {
-			result += string(runes[i])
+			builder.WriteString(string(runes[i]))
 
 			if countMap[runes[i]] > 1 {
-				result += strconv.Itoa(countMap[runes[i]])
+				builder.WriteString(strconv.Itoa(countMap[runes[i]]))
 			}
 
 			prev = runes[i]
@@ -35,5 +36,5 @@ func Pack(text string) string {
 
 	}
 
-	return result
+	return builder.String()
 }
