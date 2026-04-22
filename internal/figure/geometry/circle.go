@@ -8,7 +8,7 @@ type Circle struct {
 }
 
 func (c *Circle) Contains(p Point) bool {
-	return p.DistanceTo(c.Center) <= c.Radius
+	return p.IsInRadius(c.Center, c.Radius)
 }
 
 func (c *Circle) Area() float64 {
