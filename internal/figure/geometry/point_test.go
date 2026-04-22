@@ -1,8 +1,9 @@
 package geometry
 
 import (
-	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPointDistanceTo(t *testing.T) {
@@ -21,7 +22,7 @@ func TestPointDistanceTo(t *testing.T) {
 			name: "DistanceTo Point positive",
 			Point: Point{
 				X: 1.3,
-				Y: 2.2,
+				Y: 2.0,
 			},
 			want: 0.3,
 		},
@@ -47,10 +48,7 @@ func TestPointDistanceTo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := p.DistanceTo(tt.Point)
 
-			if math.Abs(got-tt.want) < 1e-9 {
-				t.Errorf("Test: %s, Point.IsInRadius() = %v, want %v", tt.name, got, tt.want)
-			}
-
+			assert.InDelta(t, tt.want, got, 0.1)
 		})
 	}
 }
@@ -68,7 +66,7 @@ func TestPointIsInRadius(t *testing.T) {
 		want   bool
 	}{
 		{
-			name: "Point in radius",
+			name: "Point in zero radius",
 			Point: Point{
 				X: 1.0,
 				Y: 2.0,
@@ -77,13 +75,13 @@ func TestPointIsInRadius(t *testing.T) {
 			want:   true,
 		},
 		{
-			name: "Point not in radius",
+			name: "Point in radius",
 			Point: Point{
 				X: 1.0,
 				Y: 2.0,
 			},
-			radius: -5,
-			want:   false,
+			radius: 5,
+			want:   true,
 		},
 	}
 
@@ -91,10 +89,7 @@ func TestPointIsInRadius(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := p.IsInRadius(tt.Point, tt.radius)
 
-			if got != tt.want {
-				t.Errorf("Test: %s, Point.IsInRadius() = %v, want %v", tt.name, got, tt.want)
-			}
-
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

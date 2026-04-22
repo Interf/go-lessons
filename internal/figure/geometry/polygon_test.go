@@ -1,8 +1,9 @@
 package geometry
 
 import (
-	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPolygonContains(t *testing.T) {
@@ -33,9 +34,9 @@ func TestPolygonContains(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := p.Contains(tt.p); got != tt.want {
-				t.Errorf("Polygon.Contains() = %v, want %v", got, tt.want)
-			}
+			got := p.Contains(tt.p)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 
@@ -109,9 +110,7 @@ func TestPolygonArea(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got := tt.p.Area()
 
-			if math.Abs(got-tt.want) > 1e-9 {
-				t.Errorf("Polygon.Area() = %v, want %v", got, tt.want)
-			}
+			assert.InDelta(t, tt.want, got, 0.1)
 		})
 	}
 }

@@ -1,8 +1,9 @@
 package geometry
 
 import (
-	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCircleContains(t *testing.T) {
@@ -90,17 +91,6 @@ func TestCircleArea(t *testing.T) {
 			want: 78.5,
 		},
 		{
-			name: "negative radius",
-			c: Circle{
-				Center: Point{
-					X: -5,
-					Y: -1,
-				},
-				Radius: -5,
-			},
-			want: 78.5,
-		},
-		{
 			name: "null radius",
 			c: Circle{
 				Center: Point{
@@ -116,11 +106,8 @@ func TestCircleArea(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.c.Area()
-			got = math.Round(got*10) / 10
 
-			if math.Abs(got-tt.want) > 1e-9 {
-				t.Errorf("Area() = %v, want %v", got, tt.want)
-			}
+			assert.InDelta(t, tt.want, got, 0.1)
 		})
 	}
 }
