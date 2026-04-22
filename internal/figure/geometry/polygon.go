@@ -2,7 +2,7 @@ package geometry
 
 import "math"
 
-var AreaMinPoints = 3
+const AreaMinPoints = 3
 
 type Polygon struct {
 	Points []Point
