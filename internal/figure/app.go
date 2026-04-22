@@ -74,15 +74,15 @@ func runCircleMode(centerRaw string, radius float64, checkInsideRaw string) erro
 		if circle.Contains(p) {
 			fmt.Printf(
 				"Point %s inside circle with center %s and radius %.2f\n",
-				handlers.FormatPoint(p),
-				handlers.FormatPoint(center),
+				p,
+				center,
 				radius,
 			)
 		} else {
 			fmt.Printf(
 				"Point %s outside circle with center %s and radius %.2f\n",
-				handlers.FormatPoint(p),
-				handlers.FormatPoint(center),
+				p,
+				center,
 				radius,
 			)
 		}
@@ -120,9 +120,9 @@ func runPolygonMode(rawPoints []string, checkInsideRaw string) error {
 		}
 
 		if polygon.Contains(p) {
-			fmt.Printf("Point %s inside polygon\n", handlers.FormatPoint(p))
+			fmt.Printf("Point %s inside polygon\n", p)
 		} else {
-			fmt.Printf("Point %s outside polygon\n", handlers.FormatPoint(p))
+			fmt.Printf("Point %s outside polygon\n", p)
 		}
 
 		return nil
