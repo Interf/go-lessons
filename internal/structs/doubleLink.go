@@ -92,26 +92,27 @@ func (dl *DoubleLink) PopBack() *Node {
 	return node
 }
 
-func (dl *DoubleLink) FindByValue(value int) *Node {
+func (dl *DoubleLink) FindByValue(value int) (*Node, bool) {
 	node := dl.Head
 
 	for i := 0; i < dl.Size; i++ {
 		if value == node.Value {
-			return node
+			return node, true
 		}
 
 		node = node.Next
 	}
 
-	return nil
+	return nil, false
 }
 
-func (dl *DoubleLink) RemoveNode(node *Node) *Node {
+func (dl *DoubleLink) RemoveNodeByIndex(index int) *Node {
 
 	headNode := dl.Head
 
 	for i := 0; i < dl.Size; i++ {
-		if headNode.Value == node.Value && headNode.Prev == node.Prev && headNode.Next == node.Next {
+
+		if index == i {
 
 			if headNode.Prev == nil {
 				dl.Head = headNode.Next

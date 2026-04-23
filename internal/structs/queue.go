@@ -1,28 +1,19 @@
 package structs
 
 type Queue struct {
-	Items []int
+	doubleLink DoubleLink
 }
 
 func (q *Queue) Push(item int) {
-	q.Items = append(q.Items, item)
+	q.doubleLink.PushBack(item)
 }
 
 func (q *Queue) Pop() (int, bool) {
 
-	currentLen := len(q.Items)
-
-	if currentLen == 0 {
+	node := q.doubleLink.PopFront()
+	if node == nil {
 		return 0, false
 	}
 
-	firstItem := q.Items[0]
-
-	newItems := make([]int, currentLen-1)
-
-	copy(newItems, q.Items[1:currentLen])
-
-	q.Items = newItems
-
-	return firstItem, true
+	return node.Value, true
 }

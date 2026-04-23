@@ -1,32 +1,19 @@
 package structs
 
-type Item struct {
-	Value int
-}
-
 type Stack struct {
-	Items []Item
+	doubleLink DoubleLink
 }
 
-func (s *Stack) Push(i Item) {
-	s.Items = append(s.Items, i)
+func (s *Stack) Push(item int) {
+	s.doubleLink.PushFront(item)
 }
 
-func (s *Stack) Pop() Item {
+func (s *Stack) Pop() (int, bool) {
 
-	currentLen := len(s.Items)
-
-	if (currentLen - 1) < 0 {
-		return Item{}
+	node := s.doubleLink.PopFront()
+	if node == nil {
+		return 0, false
 	}
 
-	lastItem := s.Items[currentLen-1]
-
-	newItems := make([]Item, currentLen-1)
-
-	copy(newItems, s.Items[:currentLen-1])
-
-	s.Items = newItems
-
-	return lastItem
+	return node.Value, true
 }
