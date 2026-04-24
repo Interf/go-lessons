@@ -32,35 +32,37 @@ func Unpack(str string) (string, error) {
 
 	for index, char := range runes {
 
-		if unicode.IsDigit(char) {
-			if prev == 0 {
-				return "", ErrUnpackDigitFirst
-			}
-			if isPrevDigit {
-				return "", ErrUnpackFoundNumber
-			}
-
-			countRepeat := int(char - '0')
-
-			if countRepeat == 0 {
-				result = result[:len(result)-1]
-			} else {
-				for i := 0; i < countRepeat-1; i++ {
-
-					if index-2 >= 0 && index-2 < len(result) && runes[index-2] == '\\' {
-						result = append(result, '\\')
-					}
-
-					result = append(result, prev)
-				}
-			}
-
-			isPrevDigit = true
-		} else {
+		if !unicode.IsDigit(char) {
 			result = append(result, char)
 			prev = char
 			isPrevDigit = false
+
+			continue
 		}
+
+		if prev == 0 {
+			return "", ErrUnpackDigitFirst
+		}
+		if isPrevDigit {
+			return "", ErrUnpackFoundNumber
+		}
+
+		countRepeat := int(char - '0')
+
+		if countRepeat == 0 {
+			result = result[:len(result)-1]
+		} else {
+			for i := 0; i < countRepeat-1; i++ {
+
+				if index-2 >= 0 && index-2 < len(result) && runes[index-2] == '\\' {
+					result = append(result, '\\')
+				}
+
+				result = append(result, prev)
+			}
+		}
+
+		isPrevDigit = true
 
 	}
 
@@ -107,20 +109,19 @@ func unpackRaw(str string) (string, error) {
 			}
 
 			isPrevDigit = true
-
-		} else {
-
-			if isPrevEscapeChar && !unicode.IsDigit(char) && index+1 < len(runes) && !unicode.IsDigit(runes[index+1]) {
-				return "", ErrUnpackRawEscapeCharWithoutDigit
-			}
-
-			result = append(result, char)
-			prev = char
-			isPrevDigit = false
+			isPrevEscapeChar = false
+			continue
 		}
 
-		isPrevEscapeChar = false
+		if isPrevEscapeChar && !unicode.IsDigit(char) && index+1 < len(runes) && !unicode.IsDigit(runes[index+1]) {
+			return "", ErrUnpackRawEscapeCharWithoutDigit
+		}
 
+		result = append(result, char)
+		prev = char
+		isPrevDigit = false
+
+		isPrevEscapeChar = false
 	}
 
 	return string(result), nil
