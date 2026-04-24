@@ -47,23 +47,24 @@ func Unpack(str string) (string, error) {
 			return "", ErrUnpackFoundNumber
 		}
 
+		isPrevDigit = true
+
 		countRepeat := int(char - '0')
 
 		if countRepeat == 0 {
 			result = result[:len(result)-1]
-		} else {
-			for i := 0; i < countRepeat-1; i++ {
+			continue
 
-				if index-2 >= 0 && index-2 < len(result) && runes[index-2] == '\\' {
-					result = append(result, '\\')
-				}
-
-				result = append(result, prev)
-			}
 		}
 
-		isPrevDigit = true
+		for i := 0; i < countRepeat-1; i++ {
 
+			if index-2 >= 0 && index-2 < len(result) && runes[index-2] == '\\' {
+				result = append(result, '\\')
+			}
+
+			result = append(result, prev)
+		}
 	}
 
 	return string(result), nil
@@ -98,18 +99,20 @@ func unpackRaw(str string) (string, error) {
 				return "", ErrUnpackFoundNumber
 			}
 
+			isPrevDigit = true
+			isPrevEscapeChar = false
+
 			countRepeat := int(char - '0')
 
 			if countRepeat == 0 {
 				result = result[:len(result)-1]
-			} else {
-				for i := 0; i < countRepeat-1; i++ {
-					result = append(result, prev)
-				}
+				continue
 			}
 
-			isPrevDigit = true
-			isPrevEscapeChar = false
+			for i := 0; i < countRepeat-1; i++ {
+				result = append(result, prev)
+			}
+
 			continue
 		}
 
