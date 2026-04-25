@@ -30,7 +30,7 @@ func (s *Set) Union(other *Set) *Set {
 		result.Add(value)
 	}
 
-	for value, _ := range other.data {
+	for value := range other.data {
 		result.Add(value)
 	}
 
