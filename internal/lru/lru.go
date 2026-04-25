@@ -7,106 +7,88 @@ type Node struct {
 	Next  *Node
 }
 
-type Cache struct {
+type LRUCache struct {
 	data     map[int]*Node
+	capacity int
 	head     *Node
 	tail     *Node
-	size     int
-	capacity int
 }
 
-const DefaultCapacity = 8
+const defaultCapacity = 8
 
-func NewLRUCache(capacity int) *Cache {
-	if capacity <= 0 {
-		capacity = DefaultCapacity
+func NewLRUCache(capacity int) *LRUCache {
+	if capacity < 1 {
+		capacity = defaultCapacity
 	}
 
-	return &Cache{
+	head := &Node{}
+	tail := &Node{}
+
+	head.Next = tail
+	tail.Prev = head
+
+	return &LRUCache{
 		data:     make(map[int]*Node, capacity),
-		size:     0,
 		capacity: capacity,
+		head:     head,
+		tail:     tail,
 	}
+
 }
 
-func (c *Cache) Put(index int, value int) {
-	if node, ok := c.data[index]; ok {
+func (c *LRUCache) Get(key int) (int, bool) {
+	if node, ok := c.data[key]; ok {
+		c.moveNode(node)
+
+		return node.Value, true
+	}
+
+	return 0, false
+}
+
+func (c *LRUCache) Put(key int, value int) {
+	if node, ok := c.data[key]; ok {
 		node.Value = value
-		c.removeNode(node)
-		c.addToHead(node)
+		c.moveNode(node)
 
 		return
 	}
 
 	node := &Node{
-		Key:   index,
+		Key:   key,
 		Value: value,
 	}
 
-	c.data[index] = node
+	c.data[key] = node
 	c.addToHead(node)
-	c.size++
 
-	if c.size > c.capacity {
+	if len(c.data) > c.capacity {
 		c.removeTail()
 	}
 
 }
 
-func (c *Cache) Get(index int) (int, bool) {
-	node, ok := c.data[index]
-	if !ok {
-		return 0, false
-	}
-
-	if c.head != node {
-		c.removeNode(node)
-		c.addToHead(node)
-	}
-
-	return node.Value, true
+func (c *LRUCache) moveNode(node *Node) {
+	c.removeNode(node)
+	c.addToHead(node)
 }
 
-func (c *Cache) removeNode(node *Node) {
-	if node.Prev != nil {
-		node.Prev.Next = node.Next
-	} else {
-		c.head = node.Next
-	}
-
-	if node.Next != nil {
-		node.Next.Prev = node.Prev
-	} else {
-		c.tail = node.Prev
-	}
-
-	node.Next = nil
-	node.Prev = nil
+func (c *LRUCache) removeNode(node *Node) {
+	node.Prev.Next = node.Next
+	node.Next.Prev = node.Prev
 }
 
-func (c *Cache) addToHead(node *Node) {
-	node.Prev = nil
-	node.Next = c.head
+func (c *LRUCache) addToHead(node *Node) {
+	node.Prev = c.head
+	node.Next = c.head.Next
 
-	if c.head != nil {
-		c.head.Prev = node
-	}
-
-	c.head = node
-
-	if c.tail == nil {
-		c.tail = node
-	}
+	c.head.Next.Prev = node
+	c.head.Next = node
 }
 
-func (c *Cache) removeTail() {
-	if c.tail == nil {
-		return
-	}
+func (c *LRUCache) removeTail() {
+	tail := c.tail.Prev
 
-	oldTail := c.tail
-
-	c.removeNode(oldTail)
-	delete(c.data, oldTail.Key)
-	c.size--
+	delete(c.data, tail.Key)
+	c.removeNode(tail)
 }
