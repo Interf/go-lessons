@@ -1,5 +1,7 @@
 package structs
 
+import "sync"
+
 type Node struct {
 	Value int
 	Prev  *Node
@@ -7,12 +9,16 @@ type Node struct {
 }
 
 type DoubleLink struct {
-	Head *Node
-	Tail *Node
-	Size int
+	Head  *Node
+	Tail  *Node
+	Size  int
+	mutex sync.Mutex
 }
 
 func (dl *DoubleLink) PushFront(value int) {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	node := &Node{
 		Value: value,
 	}
@@ -32,6 +38,9 @@ func (dl *DoubleLink) PushFront(value int) {
 }
 
 func (dl *DoubleLink) PushBack(value int) {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	node := &Node{
 		Value: value,
 	}
@@ -51,6 +60,9 @@ func (dl *DoubleLink) PushBack(value int) {
 }
 
 func (dl *DoubleLink) PopFront() *Node {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	if dl.Size == 0 {
 		return nil
 	}
@@ -72,6 +84,9 @@ func (dl *DoubleLink) PopFront() *Node {
 }
 
 func (dl *DoubleLink) PopBack() *Node {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	if dl.Size == 0 {
 		return nil
 	}
@@ -93,6 +108,9 @@ func (dl *DoubleLink) PopBack() *Node {
 }
 
 func (dl *DoubleLink) FindByValue(value int) (*Node, bool) {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	node := dl.Head
 
 	for i := 0; i < dl.Size; i++ {
@@ -107,6 +125,8 @@ func (dl *DoubleLink) FindByValue(value int) (*Node, bool) {
 }
 
 func (dl *DoubleLink) RemoveNodeByIndex(index int) *Node {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
 
 	headNode := dl.Head
 
@@ -149,6 +169,9 @@ func (dl *DoubleLink) RemoveNodeByIndex(index int) *Node {
 }
 
 func (dl *DoubleLink) Len() int {
+	dl.mutex.Lock()
+	defer dl.mutex.Unlock()
+
 	return dl.Size
 }
 
