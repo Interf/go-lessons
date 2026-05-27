@@ -1,5 +1,7 @@
 package lru
 
+import "sync"
+
 type Node struct {
 	Key   int
 	Value int
@@ -12,6 +14,7 @@ type LRUCache struct {
 	capacity int
 	head     *Node
 	tail     *Node
+	mutex    sync.Mutex
 }
 
 const defaultCapacity = 8
@@ -37,6 +40,9 @@ func NewLRUCache(capacity int) *LRUCache {
 }
 
 func (c *LRUCache) Get(key int) (int, bool) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if node, ok := c.data[key]; ok {
 		c.moveNode(node)
 
@@ -47,6 +53,10 @@ func (c *LRUCache) Get(key int) (int, bool) {
 }
 
 func (c *LRUCache) Put(key int, value int) {
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if node, ok := c.data[key]; ok {
 		node.Value = value
 		c.moveNode(node)
@@ -65,7 +75,6 @@ func (c *LRUCache) Put(key int, value int) {
 	if len(c.data) > c.capacity {
 		c.removeTail()
 	}
-
 }
 
 func (c *LRUCache) moveNode(node *Node) {
