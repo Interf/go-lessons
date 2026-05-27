@@ -1,7 +1,10 @@
 package set
 
+import "sync"
+
 type Set struct {
-	data map[int]struct{}
+	data  map[int]struct{}
+	mutex sync.RWMutex
 }
 
 func NewSet() *Set {
@@ -15,15 +18,26 @@ func (s *Set) Add(value int) {
 }
 
 func (s *Set) Remove(value int) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	delete(s.data, value)
 }
 
 func (s *Set) Contains(value int) bool {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	_, ok := s.data[value]
 	return ok
 }
 
 func (s *Set) Union(other *Set) *Set {
+	s.mutex.RLock()
+	other.mutex.RLock()
+	defer other.mutex.RUnlock()
+	defer s.mutex.RUnlock()
+
 	result := NewSet()
 
 	for value := range s.data {
@@ -38,6 +52,9 @@ func (s *Set) Union(other *Set) *Set {
 }
 
 func (s *Set) Intersect(other *Set) *Set {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	result := NewSet()
 
 	for value := range s.data {
@@ -50,6 +67,9 @@ func (s *Set) Intersect(other *Set) *Set {
 }
 
 func (s *Set) Difference(other *Set) *Set {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	result := NewSet()
 
 	for value := range s.data {
