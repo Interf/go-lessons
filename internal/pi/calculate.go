@@ -83,6 +83,13 @@ func calculate(ctx context.Context, workers int) CalculateResult {
 			n := uint64(id)
 			step := uint64(workers)
 
+			sign := 1.0
+			if n&1 == 1 {
+				sign = -1.0
+			}
+
+			flipSign := step&1 == 1
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -95,14 +102,13 @@ func calculate(ctx context.Context, workers int) CalculateResult {
 				for i := 0; i < batchSize; i++ {
 					term := 1 / float64(2*n+1)
 
-					if n%2 == 0 {
-						localSum += term
-					} else {
-						localSum -= term
-					}
+					localSum += sign * term
 
 					n += step
 					localIterations++
+					if flipSign {
+						sign = -sign
+					}
 				}
 
 			}
