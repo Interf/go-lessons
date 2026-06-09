@@ -2,6 +2,7 @@ package semaphore
 
 import (
 	"context"
+	"go-lessons/internal/errorsList"
 	"testing"
 	"time"
 
@@ -103,19 +104,19 @@ func TestSemaphoreMutex_Release(t *testing.T) {
 			sem:       &SemaphoreMutex{max: 5, count: 3},
 			n:         -1,
 			wantCount: 3,
-			wantPanic: ErrParamLessZero,
+			wantPanic: errorsList.ErrParamLessZero,
 		},
 		"zero": {
 			sem:       &SemaphoreMutex{max: 5, count: 3},
 			n:         0,
 			wantCount: 3,
-			wantPanic: ErrParamLessZero,
+			wantPanic: errorsList.ErrParamLessZero,
 		},
 		"release more than acquired": {
 			sem:       &SemaphoreMutex{max: 5, count: 2},
 			n:         3,
 			wantCount: 2,
-			wantPanic: ErrReleaseParmMoreAvailable,
+			wantPanic: errorsList.ErrParmMoreAvailable,
 		},
 		"correct release": {
 			sem:       &SemaphoreMutex{max: 5, count: 4},

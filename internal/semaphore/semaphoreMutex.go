@@ -2,16 +2,10 @@ package semaphore
 
 import (
 	"context"
-	"errors"
+	"go-lessons/internal/errorsList"
 	"sync"
 	"time"
 )
-
-type Semaphore interface {
-	Acquire(context.Context, int64) error
-	TryAcquire(int64) bool
-	Release(int64)
-}
 
 type SemaphoreMutex struct {
 	count int64
@@ -19,12 +13,9 @@ type SemaphoreMutex struct {
 	mu    sync.Mutex
 }
 
-var ErrParamLessZero = errors.New("param less zero")
-var ErrReleaseParmMoreAvailable = errors.New("parm more then available")
-
 func (s *SemaphoreMutex) Acquire(ctx context.Context, n int64) error {
 	if n <= 0 {
-		return ErrParamLessZero
+		return errorsList.ErrParamLessZero
 	}
 
 	for {
@@ -71,14 +62,14 @@ func (s *SemaphoreMutex) TryAcquire(n int64) bool {
 
 func (s *SemaphoreMutex) Release(n int64) {
 	if n <= 0 {
-		panic(ErrParamLessZero)
+		panic(errorsList.ErrParamLessZero)
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if n > s.count {
-		panic(ErrReleaseParmMoreAvailable)
+		panic(errorsList.ErrParmMoreAvailable)
 	}
 
 	s.count -= n
