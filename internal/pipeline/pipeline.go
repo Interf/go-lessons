@@ -53,7 +53,7 @@ func (p *pipeline) runStage(ctx context.Context, stageIndex int, in In, stage St
 		for {
 			select {
 			case <-ctx.Done():
-				p.logger.Printf("Stage %d. Context done")
+				p.logger.Printf("Stage %d. Context done", stageIndex)
 				return
 
 			case data, ok := <-in:
