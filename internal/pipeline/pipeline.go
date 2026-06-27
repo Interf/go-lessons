@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"log"
 )
 
@@ -62,7 +63,7 @@ func (p *pipeline) runStage(ctx context.Context, stageIndex int, in In, stage St
 					return
 				}
 
-				result, err := stage(data)
+				result, err := p.safeCallStage(stage, data)
 				if err != nil {
 					p.logger.Printf("Stage %d. Error: %s", stageIndex, err)
 					continue
@@ -82,4 +83,14 @@ func (p *pipeline) runStage(ctx context.Context, stageIndex int, in In, stage St
 	}()
 
 	return out
+}
+
+func (p *pipeline) safeCallStage(stage Stage, data any) (result any, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
+
+	return stage(data)
 }
