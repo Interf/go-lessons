@@ -52,7 +52,7 @@ func TestExecutePipeline_NoStages(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in)
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Equal(t, []any{42}, result)
 }
 
@@ -71,7 +71,7 @@ func TestExecutePipeline_SingleStage(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in, double)
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Equal(t, []any{2, 4}, result)
 }
 
@@ -92,7 +92,7 @@ func TestExecutePipeline_MultipleStages(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in, addOne, mulTen)
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Equal(t, []any{40}, result)
 }
 
@@ -115,7 +115,7 @@ func TestExecutePipeline_StageError(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in, errStage)
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Equal(t, []any{10, 30}, result)
 }
 
@@ -138,7 +138,7 @@ func TestExecutePipeline_ContextCancel(t *testing.T) {
 	<-stageStarted
 	cancel()
 	result, closed := collect(out, 500*time.Millisecond)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Empty(t, result)
 }
 
@@ -156,7 +156,7 @@ func TestExecutePipeline_UpstreamClose(t *testing.T) {
 	close(in)
 
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Empty(t, result)
 }
 
@@ -176,7 +176,7 @@ func TestExecutePipeline_DataFlow(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in, inc, inc, inc)
 	result, closed := collect(out, time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Equal(t, []any{3, 4, 5, 6, 7}, result)
 }
 
@@ -197,7 +197,7 @@ func TestExecutePipeline_ConcurrentWriters(t *testing.T) {
 	resultCh := make(chan []any, 1)
 	go func() {
 		result, closed := collect(out, time.Second)
-		require.True(t, closed)
+		require.True(t, closed, "pipeline output was not closed")
 		resultCh <- result
 	}()
 
@@ -231,6 +231,6 @@ func TestExecutePipeline_ManyItems(t *testing.T) {
 
 	out := p.ExecutePipeline(ctx, in, identity, identity)
 	result, closed := collect(out, 5*time.Second)
-	require.True(t, closed)
+	require.True(t, closed, "pipeline output was not closed")
 	require.Len(t, result, 1000)
 }
