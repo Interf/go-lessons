@@ -9,22 +9,27 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func collect(out Out, timeout time.Duration) []any {
+func collect(out Out, timeout time.Duration) ([]any, bool) {
 	var result []any
 	done := make(chan struct{})
+
 	go func() {
+		defer close(done)
+
 		for v := range out {
 			result = append(result, v)
 		}
-		close(done)
 	}()
+
 	select {
 	case <-done:
+		return result, true
 	case <-time.After(timeout):
+		return result, false
 	}
-	return result
 }
 
 func TestNewPipeline_NilLogger(t *testing.T) {
@@ -35,7 +40,7 @@ func TestNewPipeline_NilLogger(t *testing.T) {
 func TestNewPipeline_WithLogger(t *testing.T) {
 	logger := log.Default()
 	p := NewPipeline(logger)
-	assert.NotNil(t, p)
+	require.NotNil(t, p)
 }
 
 func TestExecutePipeline_NoStages(t *testing.T) {
@@ -46,8 +51,9 @@ func TestExecutePipeline_NoStages(t *testing.T) {
 	close(in)
 
 	out := p.ExecutePipeline(ctx, in)
-	result := collect(out, time.Second)
-	assert.Equal(t, []any{42}, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Equal(t, []any{42}, result)
 }
 
 func TestExecutePipeline_SingleStage(t *testing.T) {
@@ -64,8 +70,9 @@ func TestExecutePipeline_SingleStage(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, double)
-	result := collect(out, time.Second)
-	assert.Equal(t, []any{2, 4}, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Equal(t, []any{2, 4}, result)
 }
 
 func TestExecutePipeline_MultipleStages(t *testing.T) {
@@ -84,8 +91,9 @@ func TestExecutePipeline_MultipleStages(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, addOne, mulTen)
-	result := collect(out, time.Second)
-	assert.Equal(t, []any{40}, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Equal(t, []any{40}, result)
 }
 
 func TestExecutePipeline_StageError(t *testing.T) {
@@ -106,8 +114,9 @@ func TestExecutePipeline_StageError(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, errStage)
-	result := collect(out, time.Second)
-	assert.Equal(t, []any{10, 30}, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Equal(t, []any{10, 30}, result)
 }
 
 func TestExecutePipeline_ContextCancel(t *testing.T) {
@@ -128,8 +137,9 @@ func TestExecutePipeline_ContextCancel(t *testing.T) {
 	out := p.ExecutePipeline(ctx, in, slow)
 	<-stageStarted
 	cancel()
-	result := collect(out, 500*time.Millisecond)
-	assert.Empty(t, result)
+	result, closed := collect(out, 500*time.Millisecond)
+	require.True(t, closed)
+	require.Empty(t, result)
 }
 
 func TestExecutePipeline_UpstreamClose(t *testing.T) {
@@ -145,8 +155,9 @@ func TestExecutePipeline_UpstreamClose(t *testing.T) {
 	out := p.ExecutePipeline(ctx, in, stage)
 	close(in)
 
-	result := collect(out, time.Second)
-	assert.Empty(t, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Empty(t, result)
 }
 
 func TestExecutePipeline_DataFlow(t *testing.T) {
@@ -164,8 +175,9 @@ func TestExecutePipeline_DataFlow(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, inc, inc, inc)
-	result := collect(out, time.Second)
-	assert.Equal(t, []any{3, 4, 5, 6, 7}, result)
+	result, closed := collect(out, time.Second)
+	require.True(t, closed)
+	require.Equal(t, []any{3, 4, 5, 6, 7}, result)
 }
 
 func TestExecutePipeline_ConcurrentWriters(t *testing.T) {
@@ -184,7 +196,9 @@ func TestExecutePipeline_ConcurrentWriters(t *testing.T) {
 	n := 100
 	resultCh := make(chan []any, 1)
 	go func() {
-		resultCh <- collect(out, 5*time.Second)
+		result, closed := collect(out, time.Second)
+		require.True(t, closed)
+		resultCh <- result
 	}()
 
 	for i := 0; i < n; i++ {
@@ -216,6 +230,7 @@ func TestExecutePipeline_ManyItems(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, identity, identity)
-	result := collect(out, 5*time.Second)
-	assert.Len(t, result, 1000)
+	result, closed := collect(out, 5*time.Second)
+	require.True(t, closed)
+	require.Len(t, result, 1000)
 }
