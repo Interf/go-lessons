@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
 	"sync"
 	"testing"
@@ -38,7 +39,7 @@ func TestNewPipeline_NilLogger(t *testing.T) {
 }
 
 func TestNewPipeline_WithLogger(t *testing.T) {
-	logger := log.Default()
+	logger := log.New(io.Discard, "", 0)
 	p := NewPipeline(logger)
 	require.NotNil(t, p)
 }
@@ -135,8 +136,14 @@ func TestExecutePipeline_ContextCancel(t *testing.T) {
 	}
 
 	out := p.ExecutePipeline(ctx, in, slow)
-	<-stageStarted
+
+	select {
+	case <-stageStarted:
+	case <-time.After(time.Second):
+		t.Fatal("stage did not start")
+	}
 	cancel()
+
 	result, closed := collect(out, 500*time.Millisecond)
 	require.True(t, closed, "pipeline output was not closed")
 	require.Empty(t, result)
@@ -194,11 +201,18 @@ func TestExecutePipeline_ConcurrentWriters(t *testing.T) {
 
 	var wg sync.WaitGroup
 	n := 100
-	resultCh := make(chan []any, 1)
+
+	resultCh := make(chan struct {
+		values []any
+		closed bool
+	}, 1)
+
 	go func() {
-		result, closed := collect(out, time.Second)
-		require.True(t, closed, "pipeline output was not closed")
-		resultCh <- result
+		values, closed := collect(out, 5*time.Second)
+		resultCh <- struct {
+			values []any
+			closed bool
+		}{values, closed}
 	}()
 
 	for i := 0; i < n; i++ {
@@ -211,8 +225,9 @@ func TestExecutePipeline_ConcurrentWriters(t *testing.T) {
 	wg.Wait()
 	close(in)
 
-	result := <-resultCh
-	assert.Len(t, result, n)
+	collected := <-resultCh
+	require.True(t, collected.closed)
+	require.Len(t, collected.values, n)
 }
 
 func TestExecutePipeline_ManyItems(t *testing.T) {
@@ -233,4 +248,60 @@ func TestExecutePipeline_ManyItems(t *testing.T) {
 	result, closed := collect(out, 5*time.Second)
 	require.True(t, closed, "pipeline output was not closed")
 	require.Len(t, result, 1000)
+}
+
+func TestExecutePipeline_ConcurrentPipeline(t *testing.T) {
+	p := NewPipeline(log.New(io.Discard, "", 0))
+	ctx := context.Background()
+
+	in := make(chan any)
+
+	go func() {
+		defer close(in)
+
+		for i := 0; i < 5; i++ {
+			in <- i
+		}
+	}()
+
+	slowStage := func(data any) (any, error) {
+		time.Sleep(100 * time.Millisecond)
+		return data, nil
+	}
+
+	start := time.Now()
+
+	out := p.ExecutePipeline(ctx, in, slowStage, slowStage, slowStage, slowStage)
+
+	result, closed := collect(out, 2*time.Second)
+
+	elapsed := time.Since(start)
+
+	require.True(t, closed)
+	assert.Len(t, result, 5)
+
+	assert.Less(t, elapsed, 1200*time.Millisecond)
+}
+
+func TestExecutePipeline_StagePanic(t *testing.T) {
+	p := NewPipeline(log.New(io.Discard, "", 0))
+	ctx := context.Background()
+
+	in := make(chan any, 3)
+	in <- 1
+	in <- "bad"
+	in <- 3
+	close(in)
+
+	stage := func(data any) (any, error) {
+		n := data.(int)
+		return n * 10, nil
+	}
+
+	out := p.ExecutePipeline(ctx, in, stage)
+
+	result, closed := collect(out, time.Second)
+
+	require.True(t, closed)
+	assert.Equal(t, []any{10, 30}, result)
 }
