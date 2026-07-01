@@ -20,38 +20,16 @@ func Or(channels ...<-chan any) <-chan any {
 	for _, channel := range channels {
 		go func(ch <-chan any) {
 
-			<-ch
+			_, ok := <-ch
 
-			once.Do(func() {
-				close(orDone)
-			})
+			if !ok {
+				once.Do(func() {
+					close(orDone)
+				})
+			}
 
 		}(channel)
 	}
-
-	return orDone
-}
-
-func Or2(channels ...<-chan any) <-chan any {
-
-	switch len(channels) {
-	case 0:
-		return nil
-	case 1:
-		return channels[0]
-	}
-
-	orDone := make(chan any)
-
-	go func() {
-		defer close(orDone)
-
-		select {
-		case <-channels[0]:
-		case <-channels[1]:
-		case <-Or2(channels[2:]...):
-		}
-	}()
 
 	return orDone
 }
