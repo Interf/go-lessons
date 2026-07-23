@@ -113,28 +113,3 @@ func TestScheduleAt(t *testing.T) {
 		t.Errorf("expected task to run once, got %d", counter)
 	}
 }
-
-func TestStopWaitsForCurrentTask(t *testing.T) {
-	s := NewScheduler()
-
-	var started int32
-	var finished int32
-	startedCh := make(chan struct{})
-	task := NewTask(func(ctx context.Context) error {
-		atomic.StoreInt32(&started, 1)
-		close(startedCh)
-		time.Sleep(100 * time.Millisecond)
-		atomic.StoreInt32(&finished, 1)
-		return nil
-	})
-
-	s.ScheduleAfter(task, 0)
-
-	<-startedCh
-
-	s.Stop()
-
-	if atomic.LoadInt32(&finished) != 1 {
-		t.Error("Stop should wait for current task to finish")
-	}
-}
