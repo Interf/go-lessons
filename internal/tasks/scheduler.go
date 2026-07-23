@@ -24,7 +24,7 @@ type scheduler struct {
 	cancel   context.CancelFunc
 	stopChan chan struct{}
 	doneChan chan struct{}
-	execWg   sync.WaitGroup
+	wg       sync.WaitGroup
 }
 
 func NewScheduler() Scheduler {
@@ -82,7 +82,7 @@ func (s *scheduler) GetPendingTasks() []Task {
 
 func (s *scheduler) Stop() {
 	close(s.stopChan)
-	s.execWg.Wait()
+	s.wg.Wait()
 	<-s.doneChan
 }
 
@@ -119,10 +119,10 @@ func (s *scheduler) executeReadyTasks() {
 	}
 	s.mu.Unlock()
 
-	for _, t := range ready {
-		s.execWg.Add(1)
-		go func(task Task) {
-			defer s.execWg.Done()
+	for _, task := range ready {
+		s.wg.Add(1)
+		go func() {
+			defer s.wg.Done()
 			if task.Command != nil {
 				task.Command(s.ctx)
 			}
@@ -134,6 +134,6 @@ func (s *scheduler) executeReadyTasks() {
 				s.tasks[task.ID] = updated
 				s.mu.Unlock()
 			}
-		}(t)
+		}()
 	}
 }
